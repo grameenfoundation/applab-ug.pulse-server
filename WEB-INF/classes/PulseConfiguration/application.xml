@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configurations>
 	<appsettings>
+		<salesforce-address>https://cs3.salesforce.com/services/Soap/c/18.0</salesforce-address>
 		<salesforce-username>crmadmin@applab.org.ckwtest</salesforce-username>
 		<salesforce-password>applabug2010</salesforce-password>
-		<salesforce-token>nbOw4RzTYzsWLmViQpjx3IEnU</salesforce-token>
+		<salesforce-token>rzNlXfhzyHZMz0qrawVHnhLG</salesforce-token>
 		<pulse-url>212.88.103.106:8888/Mobile-Pulse</pulse-url>
 	</appsettings>
 </Configurations>

@@ -37,6 +37,12 @@ public class applabConfig {
 			NodeList zbr_url_list_level1=zbr_url_element.getChildNodes();
 			keyvalues.put("pulse-url", ((Node)zbr_url_list_level1.item(0)).getNodeValue());		
 			
+			//salesforce address
+			NodeList sf_address_list=app_element.getElementsByTagName("salesforce-address");
+			Element sf_address_element=(Element)sf_address_list.item(0);
+			NodeList sf_address_list_level1=sf_address_element.getChildNodes();
+			keyvalues.put("salesforce-address", ((Node)sf_address_list_level1.item(0)).getNodeValue());
+			
 			//salesforce username
 			NodeList sf_username_list=app_element.getElementsByTagName("salesforce-username");
 			Element sf_username_element=(Element)sf_username_list.item(0);
@@ -80,5 +86,9 @@ public class applabConfig {
 	public String getSalesForceToken()
 	{
 		return keyvalues.get("salesforce-token");
+	}
+
+	public String getSalesForceAddress() {
+		return keyvalues.get("salesforce-address");
 	}
 }

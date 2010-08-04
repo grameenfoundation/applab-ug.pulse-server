@@ -1,6 +1,9 @@
 package PulseConfiguration;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.util.List;
+import org.apache.commons.logging.Log;
 
 import javax.xml.namespace.QName;
 import javax.xml.rpc.ServiceException;
@@ -8,6 +11,8 @@ import javax.xml.rpc.ServiceException;
 import org.apache.axis.message.MessageElement;
 
 import com.sforce.soap.enterprise.*;
+import com.sforce.soap.enterprise.fault.InvalidIdFault;
+import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.enterprise.sobject.*;
 
@@ -17,23 +22,19 @@ public class sfConnect {
 	static applabConfig applab=new applabConfig();
 	private static SoapBindingStub binding;
 	
-	public static void login() throws ServiceException
+	public static void login() throws ServiceException, InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException
 	{
-		binding=(SoapBindingStub)new SforceServiceLocator().getSoap();
-		try
-		{
-			LoginResult loginResult=binding.login(applab.getSalesForceUsername(), applab.getSalesForcePassword()+""+applab.getSalesForceToken());
-			
-			binding._setProperty(SoapBindingStub.ENDPOINT_ADDRESS_PROPERTY, loginResult.getServerUrl());
-			
-			SessionHeader sh=new SessionHeader();
-			sh.setSessionId(loginResult.getSessionId());
-			binding.setHeader(new SforceServiceLocator().getServiceName().getNamespaceURI(), "SessionHeader", sh);			
-		}
-		catch(RemoteException e)
-		{
-			e.printStackTrace();
-		}
+		SforceServiceLocator sfService = new SforceServiceLocator();
+		sfService.setSoapEndpointAddress(applab.getSalesForceAddress());
+		binding=(SoapBindingStub)sfService.getSoap();
+		
+		LoginResult loginResult=binding.login(applab.getSalesForceUsername(), applab.getSalesForcePassword() + applab.getSalesForceToken());
+		
+		binding._setProperty(SoapBindingStub.ENDPOINT_ADDRESS_PROPERTY, loginResult.getServerUrl());
+		
+		SessionHeader sh = new SessionHeader();
+		sh.setSessionId(loginResult.getSessionId());
+		binding.setHeader(new SforceServiceLocator().getServiceName().getNamespaceURI(), "SessionHeader", sh);
 	}
 	
 	public static String getPhoneId(String handset_id) throws Exception
