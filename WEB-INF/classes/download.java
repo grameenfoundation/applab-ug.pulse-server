@@ -11,23 +11,22 @@ public class download extends HttpServlet {
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
-		String m_request=request.getParameter("request");
-		String handset_id=request.getParameter("handset_id");
+		String requestString=request.getParameter("request");
+		String handsetId=request.getParameter("handset_id");
 		
 		try
 		{
 			sfConnect.login();
-			String phoneId = sfConnect.getPhoneId(handset_id);
+			String phoneId = sfConnect.getPhoneId(handsetId);
 			if(!this.sendErrorMessage(phoneId, response))
 			{
-				this.sendResponse(m_request, phoneId, response);
+				this.sendResponse(requestString, phoneId, response);
 			}
 			sfConnect.logout();
 		}
 		catch(Exception e)
 		{
 			response.getWriter().write("The system has encountered an error");
-			log(e.toString());
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			log(sw.toString());
@@ -36,23 +35,31 @@ public class download extends HttpServlet {
 
 	private void sendResponse(String request, String phoneId, HttpServletResponse response) throws Exception {
 		String content = "";
-		if(request.equals("messages")) {
-			content = sfConnect.getCKWMessages(phoneId);
+		try
+		{
+			if(request.equals("messages")) {
+				content = sfConnect.getCKWMessages(phoneId);
+			}
+			else if (request.equals("profile")) {
+				content = sfConnect.getCKWProfile(phoneId);
+			}
+			else if (request.equals("performance")) {
+				content = sfConnect.getCKWPerformance(phoneId);
+			}
+			else {
+				content = "Invalid request.";
+			}
+			
+			if(content.equals(null) || content.equals("")) {
+				response.getWriter().write("You have no content for this tab.");
+			} else {
+				response.getWriter().write(content);
+			}
 		}
-		else if (request.equals("profile")) {
-			content = sfConnect.getCKWProfile(phoneId);
-		}
-		else if (request.equals("performance")) {
-			content = sfConnect.getCKWPerformance(phoneId);
-		}
-		else {
-			content = "Invalid request.";
-		}
-		
-		if(content.equals(null) || content.equals("")) {
-			response.getWriter().write("You have no content for this tab.");
-		} else {
-			response.getWriter().write(content);
+		catch(NullPointerException e)
+		{
+			// This seems to mean that the object being queried doesn't exist in sales force yet
+			response.getWriter().write("There was a problem accessing this tab content. Please try again later or contact an administrator.");
 		}
 	}
 
