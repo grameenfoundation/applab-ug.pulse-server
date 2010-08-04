@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configurations>
 	<appsettings>
-		<salesforce-username>crmadmin@applab.org</salesforce-username>
+		<salesforce-username>crmadmin@applab.org.ckwtest</salesforce-username>
 		<salesforce-password>applabug2010</salesforce-password>
 		<salesforce-token>nbOw4RzTYzsWLmViQpjx3IEnU</salesforce-token>
-		<pulse-url>192.168.1.21/yo</pulse-url>
+		<pulse-url>212.88.103.106:8888/Mobile-Pulse</pulse-url>
 	</appsettings>
 </Configurations>

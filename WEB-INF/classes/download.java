@@ -1,6 +1,8 @@
 
 import javax.servlet.http.*;
 
+import org.apache.commons.logging.Log;
+
 import PulseConfiguration.*;
 import java.io.*;
 
@@ -11,132 +13,66 @@ public class download extends HttpServlet {
 	{
 		String m_request=request.getParameter("request");
 		String handset_id=request.getParameter("handset_id");
-		if(m_request.equals("messages"))
+		
+		try
 		{
-			try
+			sfConnect.login();
+			String phoneId = sfConnect.getPhoneId(handset_id);
+			if(!this.sendErrorMessage(phoneId, response))
 			{
-				sfConnect.login();
-				//retrieve the message
-				String phone_id=sfConnect.getPhoneId(handset_id);
-				if(phone_id.equals("Duplicate IMEI"))
-				{
-					response.getWriter().write("The system has encountered an internal error. A duplicate IMEI has been detected");					
-				}
-				else if(phone_id.equals("Not Registered"))
-				{
-					response.getWriter().write("Sorry you cannot view your messages because your phone is not registered");
-				}
-				else if(phone_id.equals("System Error"))
-				{
-					response.getWriter().write("Sorry you cannot view your messages because an unexpected internal error has occured.");
-				}
-				else
-				{
-					String messages=sfConnect.getCKWMessages(phone_id);
-					if(messages.equals(null) || messages.equals(""))
-					{
-						response.getWriter().write("You have no messages");
-					}
-					else
-					{
-						response.getWriter().write(messages);
-					}
-				}			
-				sfConnect.logout();				
+				this.sendResponse(m_request, phoneId, response);
 			}
-			catch(NullPointerException e)
-			{
-				response.getWriter().write("You have no messages");
-			}
-			catch(Exception e)
-			{
-				response.getWriter().write("The system has encountered an error");
-			}
+			sfConnect.logout();
 		}
-		else if(m_request.equals("profile"))
+		catch(Exception e)
 		{
-			try
-			{
-				sfConnect.login();
-				//retrieve the message
-				String phone_id=sfConnect.getPhoneId(handset_id);
-				if(phone_id.equals("Duplicate IMEI"))
-				{
-					response.getWriter().write("The system has encountered an internal error. A duplicate IMEI has been detected");					
-				}
-				else if(phone_id.equals("Not Registered"))
-				{
-					response.getWriter().write("Sorry you cannot view your profile because your phone is not registered");
-				}
-				else if(phone_id.equals("System Error"))
-				{
-					response.getWriter().write("Sorry you cannot view your profile because an unexpected internal error has occured.");
-				}
-				else
-				{
-					String profile=sfConnect.getCKWProfile(phone_id);
-					if(profile.equals("") || profile.equals(null))
-					{
-						String ckw_name=sfConnect.getCKWName(phone_id);
-						response.getWriter().write("Welcome "+ckw_name+"\nYour profile has not been created");
-					}
-					else
-					{
-						response.getWriter().write(profile);
-					}
-				}
-				sfConnect.logout();				
-			}
-			catch(NullPointerException e)
-			{
-				response.getWriter().write("Your profile has not been created");
-			}
-			catch(Exception e)
-			{
-				response.getWriter().write("Sorry you cannot view your profile because an unexpected internal error has occured.");
-			}
+			response.getWriter().write("The system has encountered an error");
+			log(e.toString());
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			log(sw.toString());
 		}
-		else if(m_request.equals("performance"))
+	}
+
+	private void sendResponse(String request, String phoneId, HttpServletResponse response) throws Exception {
+		String content = "";
+		if(request.equals("messages")) {
+			content = sfConnect.getCKWMessages(phoneId);
+		}
+		else if (request.equals("profile")) {
+			content = sfConnect.getCKWProfile(phoneId);
+		}
+		else if (request.equals("performance")) {
+			content = sfConnect.getCKWPerformance(phoneId);
+		}
+		else {
+			content = "Invalid request.";
+		}
+		
+		if(content.equals(null) || content.equals("")) {
+			response.getWriter().write("You have no content for this tab.");
+		} else {
+			response.getWriter().write(content);
+		}
+	}
+
+	private boolean sendErrorMessage(String phoneId,
+			HttpServletResponse response) throws Exception {
+		if(phoneId.equals("Duplicate IMEI"))
 		{
-			try
-			{
-				sfConnect.login();
-				//retrieve the message
-				String phone_id=sfConnect.getPhoneId(handset_id);
-				if(phone_id.equals("Duplicate IMEI"))
-				{
-					response.getWriter().write("The system has encountered an internal error. A duplicate IMEI has been detected");					
-				}
-				else if(phone_id.equals("Not Registered"))
-				{
-					response.getWriter().write("Sorry you cannot view your profile because your phone is not registered");
-				}
-				else if(phone_id.equals("System Error"))
-				{
-					response.getWriter().write("Sorry you cannot view your profile because an unexpected internal error has occured.");
-				}
-				else
-				{
-					String performance_review=sfConnect.getCKWPerformance(phone_id);
-					if(performance_review.equals(null) || performance_review.equals(""))
-					{
-						response.getWriter().write("Your performance review has not been set");
-					}
-					else
-					{
-						response.getWriter().write(performance_review);						
-					}
-				}
-				sfConnect.logout();				
-			}
-			catch(NullPointerException e)
-			{
-				response.getWriter().write("Your performance review has not been created");
-			}
-			catch(Exception e)
-			{
-				response.getWriter().write("Sorry you cannot view your profile because an unexpected internal error has occured.");
-			}
+			response.getWriter().write("Sorry, your phone is assigned to more than one person.");
+			return true;
 		}
+		else if(phoneId.equals("Not Registered"))
+		{
+			response.getWriter().write("Sorry, your phone is not registered.");
+			return true;
+		}
+		else if(phoneId.equals("System Error"))
+		{
+			response.getWriter().write("Sorry, an unknown system error has occured.");
+			return true;
+		}
+		return false;
 	}
 }
