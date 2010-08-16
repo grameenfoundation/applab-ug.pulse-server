@@ -5,22 +5,22 @@
    version="2.5">
    
    <servlet>
-		<servlet-name>mpulse</servlet-name>
-		<servlet-class>pulse</servlet-class>
+		<servlet-name>SubmitSupportTicket</servlet-name>
+		<servlet-class>applab.pulse.server.SubmitSupportTicket</servlet-class>
    </servlet>
    
    <servlet>
-		<servlet-name>down</servlet-name>
-		<servlet-class>download</servlet-class>
+		<servlet-name>GetTabContent</servlet-name>
+		<servlet-class>applab.pulse.server.GetTabContent</servlet-class>
    </servlet>
    
    <servlet-mapping>
-	<servlet-name>mpulse</servlet-name>
+	<servlet-name>SubmitSupportTicket</servlet-name>
 	<url-pattern>/pulse</url-pattern>
    </servlet-mapping>
    
    <servlet-mapping>
-	<servlet-name>down</servlet-name>
+	<servlet-name>GetTabContent</servlet-name>
 	<url-pattern>/download</url-pattern>
    </servlet-mapping>
 </web-app>

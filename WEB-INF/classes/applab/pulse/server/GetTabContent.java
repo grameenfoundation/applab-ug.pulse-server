@@ -1,9 +1,10 @@
+package applab.pulse.server;
 import javax.servlet.http.*;
 
 import PulseConfiguration.*;
 import java.io.*;
 
-public class download extends HttpServlet {
+public class GetTabContent extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {

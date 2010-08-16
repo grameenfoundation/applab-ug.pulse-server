@@ -1,7 +1,9 @@
+package applab.pulse.server;
+
 import javax.servlet.http.*;
 import PulseConfiguration.*;
 
-public class pulse extends HttpServlet {
+public class SubmitSupportTicket extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
