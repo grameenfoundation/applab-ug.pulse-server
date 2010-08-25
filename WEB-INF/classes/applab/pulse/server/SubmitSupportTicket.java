@@ -1,41 +1,36 @@
 package applab.pulse.server;
 
 import javax.servlet.http.*;
-import PulseConfiguration.*;
 
-public class SubmitSupportTicket extends HttpServlet {
+import applab.server.*;
+
+public class SubmitSupportTicket extends ApplabServlet {
     private static final long serialVersionUID = 1L;
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) {
-        String handset_id = request.getParameter("handset_id");
-        String message = request.getParameter("message");
-        // login the request
+    // Process the form post, and return the updated page
+    @Override
+    protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
+        super.doApplabPost(request, response, context);
+
+        // get handset ID and message from the form parameters
+        // NOTE that context.getHandsetId() does not work here since we don't own the request headers
+        String imei = request.getParameter("handsetId");
+        String message = request.getParameter("supportText");
+        PulseSalesforceProxy salesforceProxy = new PulseSalesforceProxy();
         try {
-            sfConnect.login();
-            // handset id's are tied to ckws. get the ckw id
-            String phone_id = sfConnect.getPhoneId(handset_id);
-            if (phone_id.equals("Duplicate IMEI")) {
-                response.getWriter().write("The system has encountered an internal error. A duplicate IMEI has been detected");
-            }
-            else if (phone_id.equals("Not Registered")) {
-                response.getWriter().write("Sorry you cannot send a request because your phone is not registered");
-            }
-            else if (phone_id.equals("System Error")) {
-                response.getWriter().write("Sorry you cannot send a request because an unexpected internal error has occured.");
+            PulseSalesforceProxy.SubmissionResponse submissionResponse = salesforceProxy.submitSupportCase(message, imei);
+            String errorText = submissionResponse.getError();
+            if (errorText != null) {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorText);
+
             }
             else {
-                // get the ckw id
-                String sfckw_id = sfConnect.getSalesforceCKW_ID(phone_id);
-                String ckw_id = sfConnect.getCKW_ID(phone_id);
-                String caseNumber = sfConnect.saveRequest(message, sfckw_id, ckw_id);
-                response.getWriter().write(
-                        "Your request was received. One of our support specialists will get back to you shortly. Your support number is "
-                                + caseNumber);
+                context.writeText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber()));
+                context.close();
             }
-            sfConnect.logout();
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        finally {
+            salesforceProxy.dispose();
         }
     }
 }
