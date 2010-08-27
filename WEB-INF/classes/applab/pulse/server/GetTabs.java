@@ -84,10 +84,10 @@ public class GetTabs extends ApplabServlet {
                     tabAttributes.put(HAS_CHANGED_ATTRIBUTE, "false");
                     context.writeStartElement(TAB_ELEMENT_NAME, tabAttributes);
                 }
-                context.writeEndElement(TAB_ELEMENT_NAME);
+                context.writeEndElement();
             }
         }
-        context.writeEndElement(RESPONSE_ELEMENT_NAME);
+        context.writeEndElement();
     }
 
     private ArrayList<TabInfo> generateTabs(String imei) throws Exception {
