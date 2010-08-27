@@ -109,7 +109,7 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getMessagesTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Messages", salesforceProxy.getCKWMessages(imei));
+        return new TabInfo("Messages", MessagesTab.getMessageListHtml(imei));
     }
 
     private TabInfo getPerformanceTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {

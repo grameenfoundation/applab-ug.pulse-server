@@ -1,6 +1,7 @@
 package applab.pulse.server;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 import javax.xml.rpc.ServiceException;
 
@@ -10,8 +11,10 @@ import com.sforce.soap.enterprise.fault.InvalidIdFault;
 import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.enterprise.sobject.CKW__c;
+import com.sforce.soap.enterprise.sobject.Message__c;
 import com.sforce.soap.enterprise.sobject._case;
 
+import applab.Message;
 import applab.server.SalesforceProxy;
 
 public class PulseSalesforceProxy extends SalesforceProxy {
@@ -19,20 +22,19 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     public PulseSalesforceProxy() throws ServiceException, InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException {
         super();
     }
-
-    public String getCKWMessages(String imei) throws Exception {
-        StringBuilder commandText = new StringBuilder();
-        commandText.append("select My_Mesages__c from CKW__c");
-        commandText.append(getPhoneFilter(imei));
+     
+    public ArrayList<Message> getCKWMessageList(String imei) throws Exception {
+    	ArrayList<Message> messages = new ArrayList<Message>();
+    	StringBuilder commandText = new StringBuilder();
+    	commandText.append("select Subject__c,From__c,Sent_Time__c,Body__c from Message__c ");
+    	commandText.append("where Recipient__r.Handset__r.IMEI__c = '" + imei + "'");
         QueryResult query = getBinding().query(commandText.toString());
-
-        if (query.getSize() == 1) {
-            CKW__c ckw = (CKW__c)query.getRecords(0);
-            return ckw.getMy_Mesages__c();
+        for(int i = 0; i < query.getSize(); i++) {
+        	Message__c message = (Message__c)query.getRecords(i);
+        	messages.add(new Message(message.getSubject__c(), message.getFrom__c(), 
+        			message.getSent_Time__c().getTime(), message.getBody__c()));
         }
-        else {
-            return getErrorString(query.getSize(), imei);
-        }
+        return messages;
     }
     
     public String getCKWProfile(String imei) throws Exception {
