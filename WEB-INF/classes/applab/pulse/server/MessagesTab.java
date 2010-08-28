@@ -47,8 +47,12 @@ public class MessagesTab {
 
         PulseSalesforceProxy salesforceProxy = new PulseSalesforceProxy();
         ArrayList<Message> messages = salesforceProxy.getCKWMessageList(imei);
-        for(Message message : messages) {
-        	messageListBuilder.append(getMessageHtml(message));
+        if(messages.size() == 0) {
+        	messageListBuilder.append("<p>You do not have any messages.</p>");
+        } else {
+	        for(Message message : messages) {
+	        	messageListBuilder.append(getMessageHtml(message));
+	        }
         }
         
         messageListBuilder.append(endElements);
