@@ -11,7 +11,7 @@ public class SupportTab {
     private static final String endElements = "</form></body></html>";
 
     private static String getHiddenHandsetControl(String imei) {
-        return "<input type=\"text\" style=\"display:none\" name=\"handsetId\" value=\"" + imei + "\" />";
+        return "<input type=\"text\" style=\"display:none\" name=\"handsetId\" value=\"" + imei + "\"></input>";
     }
     
     public static void initializeStartElements() {
@@ -29,7 +29,8 @@ public class SupportTab {
 
     // get the common form controls that are used in all support tabs
     private static String getFormControls(String imei) {
-        return "<p><textarea rows=\"5\" cols=\"36\" name=\"supportText\"/></p>" + "<p><input type=\"submit\" value=\"Send\" /></p>"
+        return "<p><textarea rows=\"5\" style=\"width:100%\" name=\"supportText\"></textarea></p>" 
+                + "<p><input type=\"submit\" value=\"Send\" style=\"width:50%\"></input></p>"
                 + getHiddenHandsetControl(imei);
     }
 
