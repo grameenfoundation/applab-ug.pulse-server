@@ -29,13 +29,13 @@ public class SupportTab {
 
     // get the common form controls that are used in all support tabs
     private static String getFormControls(String imei) {
-        return "<p><textarea rows=\"5\" name=\"supportText\"/></p>" + "<p><input type=\"submit\" value=\"Send\" /></p>"
+        return "<p><textarea rows=\"5\" cols=\"36\" name=\"supportText\"/></p>" + "<p><input type=\"submit\" value=\"Send\" /></p>"
                 + getHiddenHandsetControl(imei);
     }
 
     public static String getSupportFormHtml(String imei) {
         initializeStartElements();
-        return startElements + "<p><h1>Welcome!</h1></p>" + "<p>Type your support request in the box below and we'll get back to you:</p>"
+        return startElements + "<p>Type your support request in the box below and we'll get back to you:</p>"
                 + getFormControls(imei) + endElements;
     }
 
