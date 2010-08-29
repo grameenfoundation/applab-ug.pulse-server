@@ -78,7 +78,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         
         ckw = (CKW__c)query.getRecords(0);
 
-        // now construct a case object
+        // now construct a case object with that information
         _case[] supportCase = new _case[1];
         supportCase[0] = new _case();
         supportCase[0].setReason("New Reason");
@@ -102,10 +102,10 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     
     private String getErrorString(int numberOfMatches, String imei) {
         if (numberOfMatches == 0) { 
-            return "IMEI '" + imei + "' was not found in the CKW system. Please contact your field representative";            
+            return "IMEI '" + imei + "' was not found in the CKW system. Please contact your field representative.";            
         }
         else {
-            return "Multiple CKWs Found with IMEI: " + imei;
+            return "Multiple CKWs Found with IMEI '" + imei + "'. Please contact your field representative.";
         }
     }
 

@@ -42,8 +42,8 @@ public class SupportTab {
 
     public static String getSubmissionResponse(String imei, String supportNumber) {
         initializeStartElements();
-        return startElements + "<p><h2>Your request was received. One of our support specialists will get back to you shortly."
-                + "Your support number is " + supportNumber + ".</h2></p>"
+        return startElements + "<p><h3>Your request was received. One of our support specialists will get back to you shortly."
+                + "Your support number is " + supportNumber + ".</h3></p>"
                 + "<p>If you need to submit another support request, type it in the box below and we'll get back to you:</p>"
                 + getFormControls(imei) + endElements;
     }

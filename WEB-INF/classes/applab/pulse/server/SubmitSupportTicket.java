@@ -10,8 +10,6 @@ public class SubmitSupportTicket extends ApplabServlet {
     // Process the form post, and return the updated page
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
-        super.doApplabPost(request, response, context);
-
         // get handset ID and message from the form parameters
         // NOTE that context.getHandsetId() does not work here since we don't own the request headers
         String imei = request.getParameter("handsetId");
@@ -25,7 +23,7 @@ public class SubmitSupportTicket extends ApplabServlet {
 
             }
             else {
-                context.writeText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber()));
+                context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber()));
                 context.close();
             }
         }
