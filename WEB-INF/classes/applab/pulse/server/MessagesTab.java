@@ -17,7 +17,7 @@ public class MessagesTab {
             StringBuilder startElementsBuilder = new StringBuilder();
             startElementsBuilder.append("<html><head><style type=\"text/css\">");
             startElementsBuilder.append("td { border-width: 2px; border-style: solid; }");
-            startElementsBuilder.append("</style></head><body><table>");
+            startElementsBuilder.append("</style></head><body><table style=\"width:100%\">");
             startElements = startElementsBuilder.toString();
         }
     }  

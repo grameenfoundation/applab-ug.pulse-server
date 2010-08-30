@@ -26,12 +26,12 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     public ArrayList<Message> getCKWMessageList(String imei) throws Exception {
     	ArrayList<Message> messages = new ArrayList<Message>();
     	StringBuilder commandText = new StringBuilder();
-    	commandText.append("select Subject__c,From__c,Sent_Time__c,Body__c from Message__c ");
+    	commandText.append("select Subject__c,From__r.Name,Sent_Time__c,Body__c from Message__c ");
     	commandText.append("where Recipient__r.Handset__r.IMEI__c = '" + imei + "'");
         QueryResult query = getBinding().query(commandText.toString());
         for(int i = 0; i < query.getSize(); i++) {
         	Message__c message = (Message__c)query.getRecords(i);
-        	messages.add(new Message(message.getSubject__c(), message.getFrom__c(), 
+        	messages.add(new Message(message.getSubject__c(), message.getFrom__r().getName(), 
         			message.getSent_Time__c().getTime(), message.getBody__c()));
         }
         return messages;
