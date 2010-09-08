@@ -28,7 +28,7 @@ public class GetTabs extends ApplabServlet {
     // <Tab name="Messages" hash="xvq85dcvsjw" />
     // <Tab name="Performance" hash="ov9rdcvaccw" />
     // </GetTabsRequest>
-    // 
+    //
     // returns a response like:
     // <?xml version="1.0"?>
     // <GetTabsResponse xmlns="http://schemas.applab.org/2010/08/pulse" hasChanged="true">
@@ -55,8 +55,7 @@ public class GetTabs extends ApplabServlet {
         boolean haveChanges = false;
         for (TabInfo tab : updatedTabs) {
             String oldHash = parsedRequest.getHash(tab.getName());
-            if (oldHash == null || !oldHash.equalsIgnoreCase(tab.getHash())) {
-                tab.setHasChanged(true);
+            if (tab.checkIfChanged(oldHash)) {
                 haveChanges = true;
             }
         }
@@ -113,7 +112,7 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getPerformanceTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Performance", salesforceProxy.getCKWPerformance(imei));
+        return new TabInfo("Performance", salesforceProxy.getCkwPerformance(imei));
     }
 
     private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
@@ -121,7 +120,7 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getProfileTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Profile", salesforceProxy.getCKWProfile(imei));
+        return new TabInfo("Profile", salesforceProxy.getCkwProfile(imei));
     }
 
     /**
@@ -129,6 +128,7 @@ public class GetTabs extends ApplabServlet {
      * 
      */
     private class TabInfo {
+        private static final String errorContent = "There was a problem accessing this tab content. Please try again later or contact an administrator.";
         private String name;
         private String content;
         private String hash;
@@ -145,22 +145,39 @@ public class GetTabs extends ApplabServlet {
 
         public String getHash() {
             if (this.hash == null) {
-                this.hash = HashHelpers.createSHA1(this.content);
+                this.hash = HashHelpers.createSHA1(this.getContent());
             }
 
             return this.hash;
         }
 
         public String getContent() {
-            return this.content;
+            if (this.content == null) {
+                return TabInfo.errorContent;
+            }
+            else {
+                return this.content;
+            }
         }
 
         public boolean getHasChanged() {
             return this.hasChanged;
         }
 
-        public void setHasChanged(boolean value) {
-            this.hasChanged = value;
+        public boolean checkIfChanged(String oldHash) {
+            // assume we've changed by default
+            this.hasChanged = true;
+
+            // we haven't changed if there was already content
+            if (oldHash != null) {
+                // AND we either had an error downloading new content
+                // OR it's the same as the new content 
+                if (this.content == null || this.getHash().equalsIgnoreCase(oldHash)) {
+                    this.hasChanged = false;
+                }
+            }
+            
+            return this.hasChanged;
         }
     }
 

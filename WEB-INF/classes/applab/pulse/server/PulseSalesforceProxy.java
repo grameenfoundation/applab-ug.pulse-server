@@ -2,8 +2,12 @@ package applab.pulse.server;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javax.xml.rpc.ServiceException;
+
+import applab.Message;
+import applab.server.SalesforceProxy;
 
 import com.sforce.soap.enterprise.QueryResult;
 import com.sforce.soap.enterprise.SaveResult;
@@ -14,16 +18,13 @@ import com.sforce.soap.enterprise.sobject.CKW__c;
 import com.sforce.soap.enterprise.sobject.Message__c;
 import com.sforce.soap.enterprise.sobject._case;
 
-import applab.Message;
-import applab.server.SalesforceProxy;
-
 public class PulseSalesforceProxy extends SalesforceProxy {
 
     public PulseSalesforceProxy() throws ServiceException, InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException {
         super();
     }
      
-    public ArrayList<Message> getCKWMessageList(String imei) throws Exception {
+    public ArrayList<Message> getCkwMessageList(String imei) throws Exception {
     	ArrayList<Message> messages = new ArrayList<Message>();
     	StringBuilder commandText = new StringBuilder();
     	commandText.append("select Subject__c,From__r.Name,Sent_Time__c,Body__c from Message__c ");
@@ -37,28 +38,51 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         return messages;
     }
     
-    public String getCKWProfile(String imei) throws Exception {
+    public String getCkwProfile(String imei) throws Exception {
         StringBuilder commandText = new StringBuilder();
         commandText.append("select My_Profile__c from CKW__c");
-        commandText.append(getPhoneFilter(imei));
+        commandText.append(getCkwPhoneFilter(imei));
         QueryResult query = getBinding().query(commandText.toString());
         if (query.getSize() == 1) {
-            CKW__c c = (CKW__c)query.getRecords(0);
-            return c.getMy_Profile__c();
+            CKW__c ckw = (CKW__c)query.getRecords(0);
+            return ckw.getMy_Profile__c();
         }
         else {
             return getErrorString(query.getSize(), imei);
         }
     }
 
-    public String getCKWPerformance(String imei) throws Exception {
+    /**
+     * Get details on the CKW's performance and payment information
+     */
+    public String getCkwPerformance(String imei) throws Exception {
+        // first, query for the performance message
         StringBuilder commandText = new StringBuilder();
-        commandText.append("select Performance_Review__c from CKW__c");
-        commandText.append(getPhoneFilter(imei));
+        commandText.append("SELECT Person__r.First_Name__c, Current_Performance_Review__r.Performance_Message__c");
+        
+        boolean includePaymentInformation = false;
+        Calendar now = Calendar.getInstance();
+        
+        if (now.get(Calendar.DAY_OF_MONTH) <= 5) {
+            includePaymentInformation = true;
+            commandText.append(", Previous_Performance_Review__r.Payment_Message__c");
+        }
+        commandText.append(" FROM CKW__c");
+        commandText.append(getCkwPhoneFilter(imei));
         QueryResult query = getBinding().query(commandText.toString());
         if (query.getSize() == 1) {
-            CKW__c c = (CKW__c)query.getRecords(0);
-            return c.getPerformance_Review__c();
+            CKW__c ckw = (CKW__c)query.getRecords(0);
+            StringBuilder performanceMessage = new StringBuilder();
+
+            performanceMessage.append("<p>Performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
+            performanceMessage.append("<p>" + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
+            
+            if (includePaymentInformation) {
+                performanceMessage.append("<hr><p>Payment for last month:</p><p>");
+                performanceMessage.append(ckw.getPrevious_Performance_Review__r().getPayment_Message__c());
+                performanceMessage.append("</p>");
+            }
+            return performanceMessage.toString();
         }
         else {
             return getErrorString(query.getSize(), imei);
@@ -69,7 +93,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         // first grab the CKW name and ID
         StringBuilder commandText = new StringBuilder();
         commandText.append("select id, Name from CKW__c");
-        commandText.append(getPhoneFilter(imei));
+        commandText.append(getCkwPhoneFilter(imei));
         QueryResult query = getBinding().query(commandText.toString());
         CKW__c ckw;
         if (query.getSize() != 1) {
