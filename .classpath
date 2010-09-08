@@ -14,5 +14,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="../externals/tomcat/servlet-api.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Common Server"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>
 </classpath>
