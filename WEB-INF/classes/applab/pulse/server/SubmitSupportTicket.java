@@ -12,7 +12,7 @@ public class SubmitSupportTicket extends ApplabServlet {
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
         // get handset ID and message from the form parameters
         // NOTE that context.getHandsetId() does not work here since we don't own the request headers
-        String imei = request.getParameter("handsetId");
+        String imei = context.getHandsetId();
         String message = request.getParameter("supportText");
         PulseSalesforceProxy salesforceProxy = new PulseSalesforceProxy();
         try {
