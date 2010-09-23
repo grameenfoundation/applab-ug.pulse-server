@@ -61,12 +61,14 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         commandText.append("SELECT Person__r.First_Name__c, Current_Performance_Review__r.Performance_Message__c");
         
         boolean includePaymentInformation = false;
-        Calendar now = Calendar.getInstance();
         
-        if (now.get(Calendar.DAY_OF_MONTH) <= 5) {
-            includePaymentInformation = true;
-            commandText.append(", Previous_Performance_Review__r.Payment_Message__c");
-        }
+        // Commenting this out as part of PLS-58 as not wanted until split targets are added
+        //Calendar now = Calendar.getInstance();
+        
+        //if (now.get(Calendar.DAY_OF_MONTH) <= 5) {
+        //    includePaymentInformation = true;
+        //    commandText.append(", Previous_Performance_Review__r.Payment_Message__c");
+        //}
         commandText.append(" FROM CKW__c");
         commandText.append(getCkwPhoneFilter(imei));
         QueryResult query = getBinding().query(commandText.toString());
