@@ -28,7 +28,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     	ArrayList<Message> messages = new ArrayList<Message>();
     	StringBuilder commandText = new StringBuilder();
     	commandText.append("select Subject__c,From__r.Name,Sent_Time__c,Body__c from Message__c ");
-    	commandText.append("where Recipient__r.Handset__r.IMEI__c = '" + imei + "'");
+    	commandText.append("where Recipient__r.Handset__r.IMEI__c = '" + imei + "' order by Sent_Time__c Desc");
         QueryResult query = getBinding().query(commandText.toString());
         for(int i = 0; i < query.getSize(); i++) {
         	Message__c message = (Message__c)query.getRecords(i);

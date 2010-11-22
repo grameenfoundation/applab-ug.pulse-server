@@ -23,7 +23,7 @@ public class SubmitSupportTicket extends ApplabServlet {
 
             }
             else {
-                context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber()));
+                context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber(), request));
                 context.close();
             }
         }

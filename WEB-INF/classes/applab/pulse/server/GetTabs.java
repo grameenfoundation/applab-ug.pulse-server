@@ -22,6 +22,11 @@ public class GetTabs extends ApplabServlet {
     private final static String HASH_ATTRIBUTE = "hash";
     private final static String HAS_CHANGED_ATTRIBUTE = "hasChanged";
 
+    @Override
+    protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
+        doApplabPost(request, response, context);
+    }
+    
     // given a post body like:
     // <?xml version="1.0"?>
     // <GetTabsRequest xmlns="http://schemas.applab.org/2010/08/pulse">
@@ -49,12 +54,13 @@ public class GetTabs extends ApplabServlet {
             return;
         }
 
-        ArrayList<TabInfo> updatedTabs = generateTabs(handsetId);
+        ArrayList<TabInfo> updatedTabs = generateTabs(handsetId, request);
 
         // and run a change comparison to determine the updates
         boolean haveChanges = false;
         for (TabInfo tab : updatedTabs) {
-            String oldHash = parsedRequest.getHash(tab.getName());
+            String tabName = tab.getName();
+            String oldHash = parsedRequest.getHash(tabName);
             if (tab.checkIfChanged(oldHash)) {
                 haveChanges = true;
             }
@@ -87,9 +93,10 @@ public class GetTabs extends ApplabServlet {
             }
         }
         context.writeEndElement();
+        context.close();
     }
 
-    private ArrayList<TabInfo> generateTabs(String imei) throws Exception {
+    private ArrayList<TabInfo> generateTabs(String imei, HttpServletRequest request) throws Exception {
         ArrayList<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // TODO: update this code to dynamically get the tabs from Salesforce
@@ -97,7 +104,7 @@ public class GetTabs extends ApplabServlet {
         try {
             tabs.add(getMessagesTab(salesforceProxy, imei));
             tabs.add(getPerformanceTab(salesforceProxy, imei));
-            tabs.add(getSupportTab(salesforceProxy, imei));
+            tabs.add(getSupportTab(salesforceProxy, imei, request));
             tabs.add(getProfileTab(salesforceProxy, imei));
         }
         finally {
@@ -115,8 +122,8 @@ public class GetTabs extends ApplabServlet {
         return new TabInfo("Performance", salesforceProxy.getCkwPerformance(imei));
     }
 
-    private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Support", SupportTab.getSupportFormHtml(imei));
+    private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei, HttpServletRequest request) throws Exception {
+        return new TabInfo("Support", SupportTab.getSupportFormHtml(imei, request));
     }
 
     private TabInfo getProfileTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
