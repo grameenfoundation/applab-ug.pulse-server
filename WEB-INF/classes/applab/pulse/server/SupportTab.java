@@ -2,9 +2,6 @@ package applab.pulse.server;
 
 import javax.servlet.http.HttpServletRequest;
 
-import applab.server.ApplabConfiguration;
-import applab.server.ServletRequestContext;
-
 /**
  * Set of helper functions used for displaying and processing the support tab
  * 
