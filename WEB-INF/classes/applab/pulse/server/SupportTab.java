@@ -33,7 +33,7 @@ public class SupportTab {
     // get the common form controls that are used in all support tabs
     private static String getFormControls(String imei) {
         return "<p><textarea rows=\"5\" style=\"width:100%\" name=\"supportText\"></textarea></p>" 
-                + "<p><input type=\"submit\" value=\"Send\" style=\"width:50%\"></input></p>"
+                + "<p><input type=\"submit\" value=\"Send\" style=\"width:50%\" onclick=\"this.disabled=true; this.value='Sending...'; document.forms[0].submit();\"></input></p>"
                 + getHiddenHandsetControl(imei);
     }
 
