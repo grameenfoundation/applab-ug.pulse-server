@@ -111,7 +111,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         supportCase[0].setOrigin("CKW Pulse");
         supportCase[0].setStatus("New");
         supportCase[0].setDescription(caseDetails);
-        supportCase[0].setCKW__c(ckw.getId());
+        supportCase[0].setPerson__c(ckw.getPerson__c());
         supportCase[0].setSubject("From " + ckw.getName());
         SaveResult saveResult[] = getBinding().create(supportCase);
         if (saveResult.length == 1) {
