@@ -93,7 +93,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     public SubmissionResponse submitSupportCase(String caseDetails, String imei) throws Exception {
         // first grab the CKW name and ID
         StringBuilder commandText = new StringBuilder();
-        commandText.append("select id, Name from CKW__c");
+        commandText.append("select id, Name, Person__c from CKW__c");
         commandText.append(getCkwPhoneFilter(imei));
         QueryResult query = getBinding().query(commandText.toString());
         CKW__c ckw;
