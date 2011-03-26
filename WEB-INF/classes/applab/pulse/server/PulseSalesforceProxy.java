@@ -15,6 +15,7 @@ import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.enterprise.sobject.CKW__c;
 import com.sforce.soap.enterprise.sobject.Message__c;
+import com.sforce.soap.enterprise.sobject.Person__c;
 import com.sforce.soap.enterprise.sobject._case;
 
 public class PulseSalesforceProxy extends SalesforceProxy {
@@ -91,17 +92,17 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     }
     
     public SubmissionResponse submitSupportCase(String caseDetails, String imei) throws Exception {
-        // first grab the CKW name and ID
+        // first grab the Person's name and ID
         StringBuilder commandText = new StringBuilder();
-        commandText.append("select id, Name, Person__c from CKW__c");
-        commandText.append(getCkwPhoneFilter(imei));
+        commandText.append("select id, Name from Person__c");
+        commandText.append(" WHERE Handset__r.IMEI__c = '" + imei + "'");
         QueryResult query = getBinding().query(commandText.toString());
-        CKW__c ckw;
+        Person__c person;
         if (query.getSize() != 1) {
             return SubmissionResponse.createErrorResponse(getErrorString(query.getSize(), imei));
         }
         
-        ckw = (CKW__c)query.getRecords(0);
+        person = (Person__c)query.getRecords(0);
 
         // now construct a case object with that information
         _case[] supportCase = new _case[1];
@@ -111,8 +112,8 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         supportCase[0].setOrigin("CKW Pulse");
         supportCase[0].setStatus("New");
         supportCase[0].setDescription(caseDetails);
-        supportCase[0].setPerson__c(ckw.getPerson__c());
-        supportCase[0].setSubject("From " + ckw.getName());
+        supportCase[0].setPerson__c(person.getId());
+        supportCase[0].setSubject("From " + person.getName());
         SaveResult saveResult[] = getBinding().create(supportCase);
         if (saveResult.length == 1) {
             // finally, try to obtain the case number
