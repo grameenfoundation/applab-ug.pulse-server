@@ -3,6 +3,7 @@ package applab.pulse.server;
 import java.util.ArrayList;
 
 import applab.Message;
+import applab.server.EmbeddedBrowserHelpers;
 
 /**
  * Set of helper functions used for displaying the messages tab
@@ -10,7 +11,8 @@ import applab.Message;
  */
 public class MessagesTab {
     private static String startElements;
-    private static final String endElements = "</table></body></html>";
+    private static final String endElements = "</table></body>";
+    private static final String endHtmlElement= "</html>";
     
     public static void initializeStartElements() {
         if (startElements == null) {
@@ -56,6 +58,8 @@ public class MessagesTab {
         }
         
         messageListBuilder.append(endElements);
+        messageListBuilder.append(EmbeddedBrowserHelpers.getPageLoadCompleteString());
+        messageListBuilder.append(endHtmlElement);
         return messageListBuilder.toString();
     }
 }

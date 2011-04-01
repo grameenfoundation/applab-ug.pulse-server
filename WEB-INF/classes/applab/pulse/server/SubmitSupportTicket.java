@@ -15,20 +15,15 @@ public class SubmitSupportTicket extends ApplabServlet {
         String imei = context.getHandsetId();
         String message = request.getParameter("supportText");
         PulseSalesforceProxy salesforceProxy = new PulseSalesforceProxy();
-        try {
-            PulseSalesforceProxy.SubmissionResponse submissionResponse = salesforceProxy.submitSupportCase(message, imei);
-            String errorText = submissionResponse.getError();
-            if (errorText != null) {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorText);
+        PulseSalesforceProxy.SubmissionResponse submissionResponse = salesforceProxy.submitSupportCase(message, imei);
+        String errorText = submissionResponse.getError();
+        if (errorText != null) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorText);
 
-            }
-            else {
-                context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber(), request));
-                context.close();
-            }
         }
-        finally {
-            salesforceProxy.dispose();
+        else {
+            context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber(), request, context));
+            context.close();
         }
     }
 }

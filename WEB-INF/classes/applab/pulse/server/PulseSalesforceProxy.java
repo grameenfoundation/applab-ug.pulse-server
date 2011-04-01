@@ -23,21 +23,21 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     public PulseSalesforceProxy() throws ServiceException, InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException {
         super();
     }
-     
+
     public ArrayList<Message> getCkwMessageList(String imei) throws Exception {
-    	ArrayList<Message> messages = new ArrayList<Message>();
-    	StringBuilder commandText = new StringBuilder();
-    	commandText.append("select Subject__c,From__r.Name,Sent_Time__c,Body__c from Message__c ");
-    	commandText.append("where Recipient__r.Handset__r.IMEI__c = '" + imei + "' order by Sent_Time__c Desc");
+        ArrayList<Message> messages = new ArrayList<Message>();
+        StringBuilder commandText = new StringBuilder();
+        commandText.append("select Subject__c,From__r.Name,Sent_Time__c,Body__c from Message__c ");
+        commandText.append("where Recipient__r.Handset__r.IMEI__c = '" + imei + "' order by Sent_Time__c Desc");
         QueryResult query = getBinding().query(commandText.toString());
-        for(int i = 0; i < query.getSize(); i++) {
-        	Message__c message = (Message__c)query.getRecords(i);
-        	messages.add(new Message(message.getSubject__c(), message.getFrom__r().getName(), 
-        			message.getSent_Time__c().getTime(), message.getBody__c()));
+        for (int i = 0; i < query.getSize(); i++) {
+            Message__c message = (Message__c)query.getRecords(i);
+            messages.add(new Message(message.getSubject__c(), message.getFrom__r().getName(),
+                    message.getSent_Time__c().getTime(), message.getBody__c()));
         }
         return messages;
     }
-    
+
     public String getCkwProfile(String imei) throws Exception {
         StringBuilder commandText = new StringBuilder();
         commandText.append("select My_Profile__c from CKW__c");
@@ -59,16 +59,16 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         // first, query for the performance message
         StringBuilder commandText = new StringBuilder();
         commandText.append("SELECT Person__r.First_Name__c, Current_Performance_Review__r.Performance_Message__c");
-        
+
         boolean includePaymentInformation = false;
-        
+
         // Commenting this out as part of PLS-58 as not wanted until split targets are added
-        //Calendar now = Calendar.getInstance();
-        
-        //if (now.get(Calendar.DAY_OF_MONTH) <= 5) {
-        //    includePaymentInformation = true;
-        //    commandText.append(", Previous_Performance_Review__r.Payment_Message__c");
-        //}
+        // Calendar now = Calendar.getInstance();
+
+        // if (now.get(Calendar.DAY_OF_MONTH) <= 5) {
+        // includePaymentInformation = true;
+        // commandText.append(", Previous_Performance_Review__r.Payment_Message__c");
+        // }
         commandText.append(" FROM CKW__c");
         commandText.append(getCkwPhoneFilter(imei));
         QueryResult query = getBinding().query(commandText.toString());
@@ -78,7 +78,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
 
             performanceMessage.append("<p>Performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
             performanceMessage.append("<p>" + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
-            
+
             if (includePaymentInformation) {
                 performanceMessage.append("<hr><p>Payment for last month:</p><p>");
                 performanceMessage.append(ckw.getPrevious_Performance_Review__r().getPayment_Message__c());
@@ -90,7 +90,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
             return getErrorString(query.getSize(), imei);
         }
     }
-    
+
     public SubmissionResponse submitSupportCase(String caseDetails, String imei) throws Exception {
         // first grab the Person's name and ID
         StringBuilder commandText = new StringBuilder();
@@ -101,7 +101,7 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         if (query.getSize() != 1) {
             return SubmissionResponse.createErrorResponse(getErrorString(query.getSize(), imei));
         }
-        
+
         person = (Person__c)query.getRecords(0);
 
         // now construct a case object with that information
@@ -125,10 +125,10 @@ public class PulseSalesforceProxy extends SalesforceProxy {
 
         return SubmissionResponse.createErrorResponse("Case was unable to be processed. Please try again in a few minutes.");
     }
-    
+
     private String getErrorString(int numberOfMatches, String imei) {
-        if (numberOfMatches == 0) { 
-            return "IMEI '" + imei + "' was not found in the CKW system. Please contact your field representative.";            
+        if (numberOfMatches == 0) {
+            return "IMEI '" + imei + "' was not found in the CKW system. Please contact your field representative.";
         }
         else {
             return "Multiple CKWs Found with IMEI '" + imei + "'. Please contact your field representative.";
@@ -138,21 +138,21 @@ public class PulseSalesforceProxy extends SalesforceProxy {
     public static class SubmissionResponse {
         private String content;
         private boolean isError;
-        
+
         private SubmissionResponse(String content, boolean isError) {
             this.content = content;
-            this.isError = isError;            
+            this.isError = isError;
         }
-        
+
         public String getCaseNumber() {
             if (this.isError) {
                 return null;
             }
             else {
                 return this.content;
-            }            
+            }
         }
-        
+
         public String getError() {
             if (this.isError) {
                 return this.content;
@@ -161,13 +161,13 @@ public class PulseSalesforceProxy extends SalesforceProxy {
                 return null;
             }
         }
-        
+
         private static SubmissionResponse createErrorResponse(String errorString) {
-            return new SubmissionResponse(errorString, true);            
+            return new SubmissionResponse(errorString, true);
         }
-        
+
         private static SubmissionResponse createSuccessfulResponse(String caseNumber) {
-            return new SubmissionResponse(caseNumber, false);            
+            return new SubmissionResponse(caseNumber, false);
         }
     }
 }

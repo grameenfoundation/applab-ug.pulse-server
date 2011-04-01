@@ -43,20 +43,21 @@ public class GetTabs extends ApplabServlet {
     // </GetTabsResponse>
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
-        // first, get the client's view of their tabs
+
+        // First, get the client's view of their tabs
         Document requestXml = context.getRequestBodyAsXml();
         GetTabsRequest parsedRequest = GetTabsRequest.parseRequest(requestXml);
 
-        // get the new tabs
+        // Get the new tabs
         String handsetId = context.getHandsetId();
         if (handsetId == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Handset ID must be specified in the x-Imei HTTP header");
             return;
         }
 
-        ArrayList<TabInfo> updatedTabs = generateTabs(handsetId, request);
+        ArrayList<TabInfo> updatedTabs = generateTabs(handsetId, request, context);
 
-        // and run a change comparison to determine the updates
+        // And run a change comparison to determine the updates
         boolean haveChanges = false;
         for (TabInfo tab : updatedTabs) {
             String tabName = tab.getName();
@@ -66,7 +67,7 @@ public class GetTabs extends ApplabServlet {
             }
         }
 
-        // finally write the results, which are dependent on whether or not we have any changes
+        // Finally write the results, which are dependent on whether or not we have any changes
         context.writeXmlHeader();
         if (!haveChanges) {
             HashMap<String, String> elementAttributes = new HashMap<String, String>();
@@ -96,7 +97,7 @@ public class GetTabs extends ApplabServlet {
         context.close();
     }
 
-    private ArrayList<TabInfo> generateTabs(String imei, HttpServletRequest request) throws Exception {
+    private ArrayList<TabInfo> generateTabs(String imei, HttpServletRequest request, ServletRequestContext context) throws Exception {
         ArrayList<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // TODO: update this code to dynamically get the tabs from Salesforce
@@ -104,11 +105,11 @@ public class GetTabs extends ApplabServlet {
         try {
             tabs.add(getMessagesTab(salesforceProxy, imei));
             tabs.add(getPerformanceTab(salesforceProxy, imei));
-            tabs.add(getSupportTab(salesforceProxy, imei, request));
+            tabs.add(getSupportTab(salesforceProxy, imei, request, context));
             tabs.add(getProfileTab(salesforceProxy, imei));
         }
-        finally {
-            salesforceProxy.dispose();
+        catch (Exception e) {
+            e.printStackTrace();
         }
 
         return tabs;
@@ -119,15 +120,15 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getPerformanceTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Performance", salesforceProxy.getCkwPerformance(imei));
+        return new TabInfo("Performance", salesforceProxy.getCkwPerformance(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
     }
 
-    private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei, HttpServletRequest request) throws Exception {
-        return new TabInfo("Support", SupportTab.getSupportFormHtml(imei, request));
+    private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei, HttpServletRequest request, ServletRequestContext context) throws Exception {
+        return new TabInfo("Support", SupportTab.getSupportFormHtml(imei, request, context));
     }
 
     private TabInfo getProfileTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Profile", salesforceProxy.getCkwProfile(imei));
+        return new TabInfo("Profile", salesforceProxy.getCkwProfile(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
     }
 
     /**
