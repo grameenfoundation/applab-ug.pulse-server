@@ -38,61 +38,81 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         return messages;
     }
 
-    public String getCkwProfile(String imei) throws Exception {
-        StringBuilder commandText = new StringBuilder();
-        commandText.append("select My_Profile__c from CKW__c");
-        commandText.append(getCkwPhoneFilter(imei));
-        QueryResult query = getBinding().query(commandText.toString());
-        if (query.getSize() == 1) {
-            CKW__c ckw = (CKW__c)query.getRecords(0);
-            return ckw.getMy_Profile__c();
+    public String getProfile(String imei) throws Exception {
+
+        // Load the CKW and the person.
+        CKW__c ckw = super.getCkw(imei);
+        Person__c person = super.getPerson(imei);
+
+        StringBuilder profileString = new StringBuilder();
+        if (person == null) {
+            return getErrorString(0, imei);
+        }
+
+        profileString.append("Your ID: ");
+        if (ckw != null) {
+            profileString.append(ckw.getName());
         }
         else {
-            return getErrorString(query.getSize(), imei);
+            profileString.append(person.getName());
         }
+        profileString.append(lineBreak);
+
+        // Get the name for this person.
+        profileString.append("Your Name: ");
+        profileString.append(person.getFirst_Name__c());
+        profileString.append(" ");
+        profileString.append(person.getLast_Name__c());
+        profileString.append(lineBreak);
+
+        // Get the location string for this Person.
+        profileString.append("Your Location: ");
+        profileString.append(person.getSubcounty__c());
+        profileString.append(", ");
+        profileString.append(person.getParish__c());
+        profileString.append(", ");
+        profileString.append(person.getVillage__c());
+        profileString.append(".");
+        profileString.append(lineBreak);
+        profileString.append(lineBreak);
+
+        // Get the phone ID.
+        profileString.append("Phone ID: ");
+        profileString.append(person.getHandset__r().getIMEI__c());
+        profileString.append(lineBreak);
+
+        // Get the phone number.
+        profileString.append("Phone Number: ");
+        profileString.append(person.getHandset__r().getSIM__r().getName());
+        profileString.append(lineBreak);
+        profileString.append(lineBreak);
+        profileString.append("VERY IMPORTANT: If your name or phone number are not listed correctly, please advise your field co-coordinator or field officer as soon as possible. Alternatively you can report this problem via the Support tab. Your activities will not be recorded in the system if the above information is incorrect.");
+        return profileString.toString();
     }
 
     /**
      * Get details on the CKW's performance and payment information
      */
-    public String getCkwPerformance(String imei) throws Exception {
-        // first, query for the performance message
-        StringBuilder commandText = new StringBuilder();
-        commandText.append("SELECT Person__r.First_Name__c, Current_Performance_Review__r.Performance_Message__c");
+    public String getPerformance(String imei) throws Exception {
 
-        boolean includePaymentInformation = false;
+        // First, query for the performance message
+        CKW__c ckw = super.getCkw(imei);
 
-        // Commenting this out as part of PLS-58 as not wanted until split targets are added
-        // Calendar now = Calendar.getInstance();
-
-        // if (now.get(Calendar.DAY_OF_MONTH) <= 5) {
-        // includePaymentInformation = true;
-        // commandText.append(", Previous_Performance_Review__r.Payment_Message__c");
-        // }
-        commandText.append(" FROM CKW__c");
-        commandText.append(getCkwPhoneFilter(imei));
-        QueryResult query = getBinding().query(commandText.toString());
-        if (query.getSize() == 1) {
-            CKW__c ckw = (CKW__c)query.getRecords(0);
-            StringBuilder performanceMessage = new StringBuilder();
-
-            performanceMessage.append("<p>Performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
-            performanceMessage.append("<p>" + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
-
-            if (includePaymentInformation) {
-                performanceMessage.append("<hr><p>Payment for last month:</p><p>");
-                performanceMessage.append(ckw.getPrevious_Performance_Review__r().getPayment_Message__c());
-                performanceMessage.append("</p>");
-            }
-            return performanceMessage.toString();
+        StringBuilder performanceMessage = new StringBuilder();
+        if (ckw == null) {
+            performanceMessage.append("You are not registered as a CKW so you do not have a performace record");
         }
         else {
-            return getErrorString(query.getSize(), imei);
+            performanceMessage.append("<p>Performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
+            performanceMessage.append("<p>" + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
         }
+
+        return performanceMessage.toString();
     }
 
     public SubmissionResponse submitSupportCase(String caseDetails, String imei) throws Exception {
-        // first grab the Person's name and ID
+
+        // First grab the Person's name and ID
         StringBuilder commandText = new StringBuilder();
         commandText.append("select id, Name from Person__c");
         commandText.append(" WHERE Handset__r.IMEI__c = '" + imei + "'");

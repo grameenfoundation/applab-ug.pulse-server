@@ -12,9 +12,9 @@
 	<classpathentry kind="lib" path="WEB-INF/lib/saaj.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="../externals/tomcat/servlet-api.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Common Server"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/Common Server/WebContent/WEB-INF/lib/servlet-api.jar"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>
 </classpath>

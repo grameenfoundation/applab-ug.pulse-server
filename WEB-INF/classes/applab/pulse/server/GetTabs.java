@@ -120,7 +120,7 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getPerformanceTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Performance", salesforceProxy.getCkwPerformance(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
+        return new TabInfo("Performance", salesforceProxy.getPerformance(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
     }
 
     private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei, HttpServletRequest request, ServletRequestContext context) throws Exception {
@@ -128,7 +128,7 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getProfileTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Profile", salesforceProxy.getCkwProfile(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
+        return new TabInfo("Profile", salesforceProxy.getProfile(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
     }
 
     /**
