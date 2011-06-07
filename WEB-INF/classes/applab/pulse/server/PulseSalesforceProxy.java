@@ -102,6 +102,9 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         if (ckw == null) {
             performanceMessage.append("You are not registered as a CKW so you do not have a performace record");
         }
+        else if (ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() == null) {
+            performanceMessage.append("You currently do not have a performace record. Please check back tomorrow");
+        }
         else {
             performanceMessage.append("<p>Performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
             performanceMessage.append("<p>" + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
