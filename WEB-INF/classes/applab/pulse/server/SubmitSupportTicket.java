@@ -14,15 +14,17 @@ public class SubmitSupportTicket extends ApplabServlet {
         // Get handset ID and message from the form parameters
         // NOTE that context.getHandsetId() does not work here since we don't own the request headers
         String imei = context.getHandsetId();
+        String type = request.getParameter("supportType");
         String message = request.getParameter("supportText");
         PulseSalesforceProxy salesforceProxy = new PulseSalesforceProxy();
-        PulseSalesforceProxy.SubmissionResponse submissionResponse = salesforceProxy.submitSupportCase(message, imei);
+        PulseSalesforceProxy.SubmissionResponse submissionResponse = salesforceProxy.submitSupportCase(message, imei, type);
         String errorText = submissionResponse.getError();
         if (errorText != null) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorText);
+            context.writeRawText(SupportTab.getSubmissionResponse(imei, errorText, request, context, true));
+            context.close();
         }
         else {
-            context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber(), request, context));
+            context.writeRawText(SupportTab.getSubmissionResponse(imei, submissionResponse.getCaseNumber(), request, context, false));
             context.close();
         }
     }

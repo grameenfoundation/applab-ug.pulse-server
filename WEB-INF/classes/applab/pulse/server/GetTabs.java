@@ -1,9 +1,20 @@
 package applab.pulse.server;
 
+import java.rmi.RemoteException;
 import java.util.*;
 import javax.servlet.http.*;
+import javax.xml.rpc.ServiceException;
 
+import org.apache.commons.logging.Log;
 import org.w3c.dom.*;
+
+import com.sforce.soap.enterprise.DescribeSObjectResult;
+import com.sforce.soap.enterprise.Field;
+import com.sforce.soap.enterprise.PicklistEntry;
+import com.sforce.soap.enterprise.SoapBindingStub;
+import com.sforce.soap.enterprise.fault.InvalidIdFault;
+import com.sforce.soap.enterprise.fault.LoginFault;
+import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 
 import applab.server.*;
 
@@ -26,7 +37,7 @@ public class GetTabs extends ApplabServlet {
     protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
         doApplabPost(request, response, context);
     }
-    
+
     // given a post body like:
     // <?xml version="1.0"?>
     // <GetTabsRequest xmlns="http://schemas.applab.org/2010/08/pulse">
@@ -60,6 +71,7 @@ public class GetTabs extends ApplabServlet {
         // And run a change comparison to determine the updates
         boolean haveChanges = false;
         for (TabInfo tab : updatedTabs) {
+            log(tab.getName());
             String tabName = tab.getName();
             String oldHash = parsedRequest.getHash(tabName);
             if (tab.checkIfChanged(oldHash)) {
@@ -96,20 +108,36 @@ public class GetTabs extends ApplabServlet {
         context.writeEndElement();
         context.close();
     }
-
+    
     private ArrayList<TabInfo> generateTabs(String imei, HttpServletRequest request, ServletRequestContext context) throws Exception {
         ArrayList<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // TODO: update this code to dynamically get the tabs from Salesforce
         PulseSalesforceProxy salesforceProxy = new PulseSalesforceProxy();
         try {
-            tabs.add(getMessagesTab(salesforceProxy, imei));
-            tabs.add(getPerformanceTab(salesforceProxy, imei));
-            tabs.add(getSupportTab(salesforceProxy, imei, request, context));
-            tabs.add(getProfileTab(salesforceProxy, imei));
+            TabInfo messagesInfo = getMessagesTab(salesforceProxy, imei);
+            if (null != messagesInfo) {
+                tabs.add(messagesInfo);
+            }
+
+            TabInfo performanceInfo = getPerformanceTab(salesforceProxy, imei);
+            if (null != performanceInfo) {
+                tabs.add(performanceInfo);
+            }
+
+            TabInfo supportInfo = getSupportTab(salesforceProxy, imei, request, context);
+            if (null != supportInfo) {
+                tabs.add(supportInfo);
+            }
+
+            TabInfo profileInfo = getProfileTab(salesforceProxy, imei);
+            if (null != profileInfo) {
+                tabs.add(profileInfo);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
+            throw e;
         }
 
         return tabs;
@@ -120,10 +148,17 @@ public class GetTabs extends ApplabServlet {
     }
 
     private TabInfo getPerformanceTab(PulseSalesforceProxy salesforceProxy, String imei) throws Exception {
-        return new TabInfo("Performance", salesforceProxy.getPerformance(imei) + EmbeddedBrowserHelpers.getPageLoadCompleteString());
+        // If the person isn't a CKW, this will return null, so the tab will not show
+        String performanceInfo = salesforceProxy.getPerformance(imei);
+        if (null != performanceInfo) {
+            return new TabInfo("Performance", performanceInfo + EmbeddedBrowserHelpers.getPageLoadCompleteString());
+        } else {
+            return null;
+        }
     }
 
-    private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei, HttpServletRequest request, ServletRequestContext context) throws Exception {
+    private TabInfo getSupportTab(PulseSalesforceProxy salesforceProxy, String imei, HttpServletRequest request,
+                                  ServletRequestContext context) throws Exception {
         return new TabInfo("Support", SupportTab.getSupportFormHtml(imei, request, context));
     }
 
@@ -179,12 +214,12 @@ public class GetTabs extends ApplabServlet {
             // we haven't changed if there was already content
             if (oldHash != null) {
                 // AND we either had an error downloading new content
-                // OR it's the same as the new content 
+                // OR it's the same as the new content
                 if (this.content == null || this.getHash().equalsIgnoreCase(oldHash)) {
                     this.hasChanged = false;
                 }
             }
-            
+
             return this.hasChanged;
         }
     }

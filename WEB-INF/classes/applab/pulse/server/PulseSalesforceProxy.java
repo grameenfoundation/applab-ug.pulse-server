@@ -1,7 +1,10 @@
 package applab.pulse.server;
 
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.xml.rpc.ServiceException;
 
@@ -82,8 +85,10 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         profileString.append(lineBreak);
 
         // Get the phone number.
-        profileString.append("Phone Number: ");
-        profileString.append(person.getHandset__r().getSIM__r().getName());
+        if(null != person.getHandset__r().getSIM__r()) {
+            profileString.append("Phone Number: ");
+            profileString.append(person.getHandset__r().getSIM__r().getName());
+        }
         profileString.append(lineBreak);
         profileString.append(lineBreak);
         profileString.append("VERY IMPORTANT: If your name or phone number are not listed correctly, please advise your field co-coordinator or field officer as soon as possible. Alternatively you can report this problem via the Support tab. Your activities will not be recorded in the system if the above information is incorrect.");
@@ -100,21 +105,30 @@ public class PulseSalesforceProxy extends SalesforceProxy {
 
         StringBuilder performanceMessage = new StringBuilder();
         if (ckw == null) {
-            performanceMessage.append("You are not registered as a CKW so you do not have a performace record");
+            // Return null so that the tab doesn't show. When the performance data is linked to the person object, this shall change
+            return null;
         }
         else if (ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() == null) {
-            performanceMessage.append("You currently do not have a performace record. Please check back tomorrow");
+            performanceMessage.append("Your performance record hasn't yet been created. It usually takes about 24 hours. Please check back tomorrow");
         }
         else {
-            performanceMessage.append("<p>Performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
-            performanceMessage.append("<p>" + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
+            performanceMessage.append("<p>This month's performance summary for " + ckw.getPerson__r().getFirst_Name__c() + "</p>");
+            
+            // Get current date
+            Calendar currentDate = Calendar.getInstance();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MMM-dd");
+            String currentDateString = formatter.format(currentDate.getTime());
+            
+            performanceMessage.append("<p>Update date: " + currentDateString + "<br/><br/>"  + ckw.getCurrent_Performance_Review__r().getPerformance_Message__c() + "</p>");
         }
 
         return performanceMessage.toString();
     }
 
-    public SubmissionResponse submitSupportCase(String caseDetails, String imei) throws Exception {
-
+    public SubmissionResponse submitSupportCase(String caseDetails, String imei, String type) throws Exception {
+        if(null == caseDetails || caseDetails.equalsIgnoreCase("")) {
+            return SubmissionResponse.createErrorResponse("You haven't entered any text. Please enter some text before you submit");
+        }
         // First grab the Person's name and ID
         StringBuilder commandText = new StringBuilder();
         commandText.append("select id, Name from Person__c");
@@ -131,7 +145,11 @@ public class PulseSalesforceProxy extends SalesforceProxy {
         _case[] supportCase = new _case[1];
         supportCase[0] = new _case();
         supportCase[0].setReason("New Reason");
-        supportCase[0].setType("Unknown");
+        if(null != type) {
+            supportCase[0].setType(type);
+        } else {
+            supportCase[0].setType("Unknown");
+        }
         supportCase[0].setOrigin("CKW Pulse");
         supportCase[0].setStatus("New");
         supportCase[0].setDescription(caseDetails);
